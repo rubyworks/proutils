@@ -37,7 +37,7 @@ faciliate the utility methods.
 ## Tips
 
 If you don't want to fill up a class with a ton of FileUtils methods,
-but still won't relatively eash access to those methods then define
+but still want relatively easy access to those methods then define
 a file system delegator.
 
     def fs
