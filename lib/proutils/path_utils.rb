@@ -41,7 +41,7 @@ module ProUtils
         dir = File.dirname(dir)
       end
 
-      path ? Path.new(path, config) || nil
+      path ? Path.new(path, config) : nil
     end
 
     # Apply a naming policy to a file name and extension.

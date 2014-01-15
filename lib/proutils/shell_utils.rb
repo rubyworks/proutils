@@ -32,9 +32,18 @@ module ProUtils
     #    Ratch::Shell.new(path, mode)
     #  )
     #end
+
+    # Make the instance level available at the class level too.
+    extend self
+
   end
 
   ##
+  # Shell class acts as a delegator for shelling out to the command
+  # line.
+  #
+  #     shell = Shell.new
+  #     shell.rdoc "-a lib/**/*.rb"
   #
   class Shell
 
@@ -75,9 +84,6 @@ module ProUtils
       super(c, *a, &b) if b
       out(c, *a)
     end
-
-    # Make the instance level available at the class level too.
-    extend self
 
   end
 
