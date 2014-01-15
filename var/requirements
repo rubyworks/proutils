@@ -2,6 +2,6 @@
 - facets
 #- detroit (build)
 #- ergo (build)
-#- qed (test)
+- qed (test)
 #- lemon (test)
 
