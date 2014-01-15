@@ -15,6 +15,7 @@ lib/proutils/path_utils.rb
 lib/proutils/shell_utils.rb
 lib/proutils/stdio_utils.rb
 lib/proutils.rb
+demo/01_proutils.md
 README.md
 HISTORY.md
 LICENSE.txt
