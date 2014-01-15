@@ -61,9 +61,8 @@ module ProUtils
 
     # List of attributes.
     ATTRIBUTES = [
-      :force, :quiet, :trial, :noop, :verbose,
-      :debug, :trace,
-      :file_name_policy
+      :force, :quiet, :trial, :noop, :verbose, :debug, :trace,
+      :root_pattern, :file_name_policy
     ]
 
     #
@@ -130,8 +129,15 @@ module ProUtils
     #
     attr_boolean :trial
 
+    # If `@noop` is nil then fallsback to the global variable `$NOOP`.
+    def noop
+      @noop || $NOOP
+    end
+
     #
-    attr_boolean :noop
+    def noop=(boolean)
+      @noop = !!boolean
+    end
 
     # A *dryrun* is the same a *verbose* and *noop* togehter.
     def dryrun?
@@ -144,20 +150,55 @@ module ProUtils
       self.noop    = boolean
     end
 
-    #
-    attr_boolean :debug
+    # If `@debug` is `false` or `nil` then fallsback to the global variable `$DEBUG`.
+    def debug?
+      @debug || $DEBUG
+    end
 
     #
-    attr_boolean :trace
+    def debug=(boolean)
+      @debug = !!boolean
+    end
+
+    # If `@trace` is `false` or `nil` then fallsback to the global variable `$TRACE`.
+    def trace?
+      @trace || $TRACE
+    end
 
     #
-    attr_accessor :stdout
+    def trace=(boolean)
+      @trace = !!boolean
+    end
+
+    # If `@stdin` is nil then fallsback to the global variable `$stdin`.
+    def stdin
+      @stdin || $stdin
+    end
 
     #
-    attr_accessor :stdin
+    def stdin=(io)
+      @stdin = io
+    end
+
+    # If `@stdout` is nil then fallsback to the global variable `$stdout`.
+    def stdout
+      @stdout || $stdout
+    end
 
     #
-    attr_accessor :stderr
+    def stdout=(io)
+      @stdout = io
+    end
+
+    # If `@stderr` is nil then fallsback to the global variable `$stderr`.
+    def stderr
+      @stderr || $stdrr
+    end
+
+    #
+    def stderr=(io)
+      @stderr = io
+    end
 
     #
     attr_reader :file_name_policy
