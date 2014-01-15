@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 
         title "ProUtils"
 
@@ -9,10 +10,6 @@
 
        author "Trans <transfire@gmail.com>"
 
-    copyright "2014 Rubyworks (BSD-2-Clause)"
-
-      created "2014-01-14"
-
   description "ProUtils provides a large set of utitlity methods useful " \
               "for project development requirements. The methods are " \
               "divided up into a set of topic modules to help maximize " \
@@ -22,9 +19,13 @@
 
  repositories upstream: "git://github.com/rubyworks/proutils.git"
 
-    resources	home: "http://rubyworks.github.com/proutils",
-							docs: "http://rubydoc.info/gems/proutils/frames",
-							code: "http://github.com/rubyworks/proutils",
-							bugs: "http://github.com/rubyworks/proutils/issues",
-							mail: "http://groups.google.com/group/rubyworks-mailinglist"
+    resources home: "http://rubyworks.github.com/proutils",
+              docs: "http://rubydoc.info/gems/proutils/frames",
+              code: "http://github.com/rubyworks/proutils",
+              bugs: "http://github.com/rubyworks/proutils/issues",
+              mail: "http://groups.google.com/group/rubyworks-mailinglist"
+
+      created "2014-01-14"
+
+    copyright "2014 Rubyworks (BSD-2-Clause)"
 
