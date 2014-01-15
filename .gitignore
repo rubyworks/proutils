@@ -1,0 +1,11 @@
+*.gem
+*.lock
+.reap/digest
+.rdoc
+.yardoc
+log/
+pkg/
+tmp/
+doc/
+web/
+DEMO.md

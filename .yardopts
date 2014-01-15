@@ -1,0 +1,12 @@
+--title "ProUtils"
+--output-dir doc
+--plugin tomdoc
+--readme README.md
+--exclude lib/protuils.yml
+--protected
+--private
+lib
+-
+*.md
+*.txt
+

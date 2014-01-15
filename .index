@@ -1,0 +1,52 @@
+---
+revision: 2013
+type: ruby
+sources:
+- var
+authors:
+- name: Trans
+  email: transfire@gmail.com
+organizations:
+- name: Rubyworks
+requirements:
+- name: facets
+conflicts: []
+alternatives: []
+resources:
+- type: home
+  uri: http://rubyworks.github.com/proutils
+  label: Homepage
+- type: docs
+  uri: http://rubydoc.info/gems/proutils/frames
+  label: Documentation
+- type: code
+  uri: http://github.com/rubyworks/proutils
+  label: Source Code
+- type: bugs
+  uri: http://github.com/rubyworks/proutils/issues
+  label: Issue Tracker
+- type: mail
+  uri: http://groups.google.com/group/rubyworks-mailinglist
+  label: Mailing List
+repositories:
+- name: upstream
+  scm: git
+  uri: git://github.com/rubyworks/proutils.git
+categories: []
+copyrights:
+- holder: Rubyworks
+  year: '2014'
+  license: BSD-2-Clause
+customs: []
+paths:
+  lib:
+  - lib
+name: proutils
+title: ProUtils
+summary: Project utility methods
+created: '2014-01-14'
+description: "ProUtils provides a large set of utitlity methods useful\nfor project
+  development requirements. The methods are \ndivided up into a set of topic modules
+  to help maximize\nreusability."
+version: 0.1.0
+date: '2014-01-15'
