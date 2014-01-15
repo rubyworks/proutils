@@ -1,31 +1,30 @@
-#!/usr/bin/env ruby
 
-        title "ProUtils"
+        title  "ProUtils"
 
-         name "proutils"
+         name  "proutils"
 
-      version "0.4.0"
+      version  "0.4.0"
 
-      summary "Project utility methods"
+      summary  "Project utility methods"
 
-       author "Trans <transfire@gmail.com>"
+       author  "Trans <transfire@gmail.com>"
 
-  description "ProUtils provides a large set of utitlity methods useful " \
-              "for project development requirements. The methods are " \
-              "divided up into a set of topic modules to help maximize " \
-              "reusability."
+  description  "ProUtils provides a large set of utitlity methods useful " \
+               "for project development requirements. The methods are " \
+               "divided up into a set of topic modules to help maximize " \
+               "reusability."
 
- organization "Rubyworks"
+ organization  "Rubyworks"
 
- repositories upstream: "git://github.com/rubyworks/proutils.git"
+ repositories  upstream: "git://github.com/rubyworks/proutils.git"
 
-    resources home: "http://rubyworks.github.com/proutils",
-              docs: "http://rubydoc.info/gems/proutils/frames",
-              code: "http://github.com/rubyworks/proutils",
-              bugs: "http://github.com/rubyworks/proutils/issues",
-              mail: "http://groups.google.com/group/rubyworks-mailinglist"
+    resources  home: "http://rubyworks.github.com/proutils",
+               docs: "http://rubydoc.info/gems/proutils/frames",
+               code: "http://github.com/rubyworks/proutils",
+               bugs: "http://github.com/rubyworks/proutils/issues",
+               mail: "http://groups.google.com/group/rubyworks-mailinglist"
 
-      created "2014-01-14"
+      created  "2014-01-14"
 
-    copyright "2014 Rubyworks (BSD-2-Clause)"
+    copyright  "2014 Rubyworks (BSD-2-Clause)"
 
