@@ -10,16 +10,3 @@ require_relative 'proutils/path_utils'
 require_relative 'proutils/stdio_utils'
 require_relative 'proutils/shell_utils'
 
-module ProUtils
-
-  include ConfigUtils
-  include StdioUtils
-  include EmailUtils
-  include ShellUtils
-  include PathUtils
-  #include FileUtils
-
-  extend self
-
-end
-

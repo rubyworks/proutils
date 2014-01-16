@@ -10,14 +10,22 @@ authors:
 organizations:
 - name: Rubyworks
 requirements:
-- groups:
-  - default
-  version: '>= 0'
+- version: '>= 0'
   name: facets
 - groups:
   - test
   version: '>= 0'
   name: qed
+- engines:
+  - name: rbx
+    version: 0+
+  version: ~> 2.0
+  name: rubysl
+- engines:
+  - name: rbx
+    version: 0+
+  version: '>= 0'
+  name: psych
 conflicts: []
 alternatives: []
 resources:
@@ -53,8 +61,8 @@ title: ProUtils
 name: proutils
 version: 0.4.0
 summary: Project utility methods
-created: '2014-01-14'
 description: ProUtils provides a large set of utitlity methods useful for project
   development requirements. The methods are divided up into a set of topic modules
   to help maximize reusability.
-date: '2014-01-15'
+created: '2014-01-14'
+date: '2014-01-16'

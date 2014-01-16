@@ -19,21 +19,21 @@ module ProUtils
 
     def force?   ; config.force?   ; end
 
-    def quiet?   ; config.quiet?   ; end
+    def silent?  ; config.silent?  ; end
 
-    def trial?   ; config.trial?   ; end
+    def quiet?   ; config.quiet?   ; end
 
     def trace?   ; config.trace?   ; end
 
     def debug?   ; config.debug?   ; end
 
-    def verbose? ; config.verbose? ; end
+    def warn?    ; config.warn?    ; end
 
-    def noop?    ; config.trial?   ; end
+    def noop?    ; config.noop?    ; end
+
+    def trial?   ; config.trial?   ; end
 
     def dryrun?  ; config.dryrun?  ; end
-
-    def silent?  ; config.silent?  ; end
 
   end
 
@@ -42,11 +42,10 @@ module ProUtils
   # configuration settings used by other utilities.
   #
   # * force
-  # * trial
+  # * trial/dryrun
   # * noop
-  # * quiet/silent
-  # * verbose
-  #
+  # * warn
+  # * silent/quiet
   # * debug
   # * trace
   #
@@ -64,26 +63,6 @@ module ProUtils
       :force, :quiet, :trial, :noop, :verbose, :debug, :trace,
       :root_pattern, :file_name_policy
     ]
-
-    #
-    def self.attr_boolean(name)
-      module_eval %{
-        def #{name}?
-          @#{name}
-        end
-        def #{name}=(boolean)
-          @#{name} = !!boolean
-        end
-      }
-    end
-
-    #
-    def self.alias_boolean(name, target)
-      module_eval %{
-        alias :#{name}? :#{target}?
-        alias :#{name}= :#{target}=
-      }
-    end
 
     #
     def initialize(options={})
@@ -113,24 +92,80 @@ module ProUtils
       end
     end
 
+    # Force opertations that otherwise would have been skipped
+    # or raised an error for catuionary reasons.
     #
-    attr_boolean :force
+    # NOTE: There is a reluctance to provide a global fallback for
+    #   the force setting, but being consitent with all the other
+    #   settings it does so.
+    #   
+    # Returns [Boolean]
+    def force?
+      @force || $FORCE
+    end
+
+    # Set force setting `true` or `false`.
+    def force=(boolean)
+      @force = !!boolean
+    end
+
+    # When silent the output to $stdout is supressed.
+    #
+    # Returns [Boolean]
+    def silent?
+      @silent || $SILENT
+    end
 
     #
-    attr_boolean :quiet
+    def silent=(boolean)
+      @silent = !!boolean
+    end
 
-    # Alias for quiet.
-    alias_boolean :silent, :quiet
+    # Alias for `#silent?`.
+    alias quiet? silent?
 
-    # Verbose is not the opposite of quiet. Where as quiet literally blocks
-    # output, verbose simply means, "provide extra details".
-    attr_boolean :verbose
+    # Alias for `#silent=`.
+    alias quiet= silent=
 
+    # Warning level.
     #
-    attr_boolean :trial
+    # Returns [false,Integer]
+    def warn?
+      @warn || $WARN
+    end
+
+    # Warn set the warning level. It can be `false` (or `nil`) to mean
+    # no warnings or any positive integer to indicate a level of warnings
+    # The higher the level the more types of warnings one will see.
+    #
+    # Unfortunately, Ruby is a bit limited in levels, and it only 
+    # natively support two levels handled as the `false` and `true`
+    # values of the $VERBOSE global variable.
+    #
+    def warn=(level)
+      @warn = (
+        case level
+        when Integer
+          @warn = level.to_i.abs
+        when True
+          @warn = 0
+        else
+          @warn = false
+        end
+      )
+
+      # Ruby's handling of warning levels
+      $VERBOSE = (
+        case @warn
+        when nil, false then nil
+        when 0 then false
+        else true
+        end
+      )
+    end
 
     # If `@noop` is nil then fallsback to the global variable `$NOOP`.
-    def noop
+    def noop?
       @noop || $NOOP
     end
 
@@ -144,11 +179,15 @@ module ProUtils
       verbose? && noop?
     end
 
+    alias trial? dryrun?
+
     #
-    def dryrun=(boolean)
-      self.verbose = boolean
-      self.noop    = boolean
+    def dryrun=(boolean_or_integer)
+      self.warn = boolean_or_integer
+      self.noop = boolean
     end
+
+    alias trial dryrun
 
     # If `@debug` is `false` or `nil` then fallsback to the global variable `$DEBUG`.
     def debug?
@@ -171,6 +210,8 @@ module ProUtils
     end
 
     # If `@stdin` is nil then fallsback to the global variable `$stdin`.
+    # 
+    # Returns [IO]
     def stdin
       @stdin || $stdin
     end
@@ -181,6 +222,8 @@ module ProUtils
     end
 
     # If `@stdout` is nil then fallsback to the global variable `$stdout`.
+    # 
+    # Returns [IO]
     def stdout
       @stdout || $stdout
     end
@@ -191,6 +234,8 @@ module ProUtils
     end
 
     # If `@stderr` is nil then fallsback to the global variable `$stderr`.
+    # 
+    # Returns [IO]
     def stderr
       @stderr || $stdrr
     end
@@ -200,23 +245,14 @@ module ProUtils
       @stderr = io
     end
 
-    #
-    attr_reader :file_name_policy
-
     # Project root directory.
     #
+    # Returns [Pathname]
     attr_reader :root
 
     #
     def root=(dir)
       @root = Pathname.new(dir)
-    end
-
-    #
-    def file_name_policy=(entry)
-      @config[:file_name_policy] ||= (
-        Array(entry).map{ |s| s.to_s }
-      )
     end
 
     # Glob for finding root of a project.
@@ -229,12 +265,27 @@ module ProUtils
       @root_pattern = glob
     end
 
+    # Returns [Array<Symbol>]
+    attr_reader :file_name_policy
+
+    #
+    def file_name_policy=(entry)
+      @config[:file_name_policy] ||= (
+        Array(entry).map{ |s| s.to_s }
+      )
+    end
+
     # Current platform.
     def current_platform
       require 'facets/platform'
       Platform.local.to_s
     end
 
+    # Access RBConfig::CONFIG as an Struct.
+    #
+    # TODO: Currently this returns an OpenStruct, but it should be
+    #       a regular Struct if possible.
+    #
     def rbconfig
       @_rbconfig ||= (
         c = ::RbConfig::CONFIG.rekey{ |k| k.to_s.downcase }
@@ -242,7 +293,7 @@ module ProUtils
       )
     end
 
-    # The Ruby command, i.e. the executable.
+    # The Ruby command, i.e. the path the the Ruby executable.
     def ruby_command
       @_ruby_command ||= (
 		    bindir   = rbconfig.bindir
