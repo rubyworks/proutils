@@ -55,7 +55,7 @@ copyrights:
   license: BSD-2-Clause
 customs: []
 paths:
-  lib:
+  load:
   - lib
 title: ProUtils
 name: proutils

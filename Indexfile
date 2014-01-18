@@ -28,3 +28,5 @@
 
     copyright  "2014 Rubyworks (BSD-2-Clause)"
 
+         paths load: "lib"
+

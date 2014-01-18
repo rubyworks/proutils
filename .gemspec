@@ -204,6 +204,16 @@ module Indexer
         next if req['optional']
         next if req['external']
 
+        # TODO: how best to handle; why doesn't ruygems have unified gems?
+        # NOTE: Must change environment variable RUBY_ENGINE to build gem for
+        # different platform.
+        if engines = req['engines']
+          next if engines.none? do |engine|
+            engine['name'] == (ENV['RUBY_ENGINE'] || RUBY_ENGINE)
+            # TODO: version comparison (ugh!)
+          end
+        end
+
         name    = req['name']
         groups  = req['groups'] || []
 
