@@ -11,6 +11,7 @@ lib/proutils/core_ext/to_yamlfrag.rb
 lib/proutils/core_ext.rb
 lib/proutils/email_utils.rb
 lib/proutils/file_utils.rb
+lib/proutils/info_utils.rb
 lib/proutils/path_utils.rb
 lib/proutils/shell_utils.rb
 lib/proutils/stdio_utils.rb

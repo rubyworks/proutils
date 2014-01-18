@@ -10,17 +10,22 @@ module ProUtils
 
     include ConfigUtils
 
-    #
+    # Shell delegator.
     def shell
-      @_shell || Shell.new(config)
+      @_shell ||= Shell.new(__config__)
     end
 
-    # Shellout to ruby.
+    # Shell out to ruby.
     def ruby(*argv)
-      shell.out(config.ruby_command, *argv)
+      shell.out(InfoUtils.ruby_command, *argv)
     end
 
-    # Delegate to Ratch::Shell instance.
+    # Shortcut to `shell.out` popularized by Rake.
+    def sh(*argv)
+      shell.out(*argv)
+    end
+
+    # Deprecated: Delegate to Ratch::Shell instance.
     #def shell(path=Dir.pwd)
     #  @shell ||= {}
     #  @shell[path] ||= (
@@ -48,10 +53,11 @@ module ProUtils
   class Shell
 
     include ConfigUtils
+    include StdioUtils
 
     #
     def initialize(config=nil)
-      @config = config || Config.new
+      @__config__ = config || Config.new
     end
 
     # Shell out.
@@ -64,7 +70,7 @@ module ProUtils
       return true if noop?
 
       success = nil
-      if quiet?
+      if silent?
         silently{ success = system(cmd) }
       else
         success = system(cmd)

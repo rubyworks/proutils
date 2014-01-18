@@ -5,53 +5,84 @@ module ProUtils
   ##
   # ConfigUtils module provides an interface to configuration.
   #
+  # TODO: Should these all just be globals instead? Then we don't
+  #        have to fuss with passing them around. If they need to be
+  #        changed for specific section of code then we can create a
+  #        wrapper, e.g.
+  #
+  #            configure(options) do
+  #              # make calls
+  #            end
+  #
+  #        But that is not thread safe :(. Can we fix  with Mutex locks?
+  #        If it wasn't for the threading question this would probably
+  #        be a done deal.
+  #
   module ConfigUtils
 
 		#
 		def configure(options)
-		  @config = Config.new(options)
+		  @__config__ ||= Config.new
+      @__config__.update(options)
 		end
 
-		#
-		def config
-		  @config
+		# The utility modules themselves use this method instead
+    # of the ordinary #config method to avoid any method name
+    # clash.
+		def __config__
+		  @__config__ ||= Config.new
 		end
 
-    def force?   ; config.force?   ; end
+    #
+    alias config __config__
 
-    def silent?  ; config.silent?  ; end
+    def force?     ; __config__.force?   ; end
+    def force=(b)  ; __config__.force=b  ; end
 
-    def quiet?   ; config.quiet?   ; end
+    def silent?    ; __config__.silent?  ; end
+    def silent=(b) ; __config__.silent=b ; end
 
-    def trace?   ; config.trace?   ; end
+    def quiet?     ; __config__.quiet?   ; end
+    def quiet=(b)  ; __config__.quiet=b  ; end
 
-    def debug?   ; config.debug?   ; end
+    def trace?     ; __config__.trace?   ; end
+    def trace=(b)  ; __config__.trace=b  ; end
 
-    def warn?    ; config.warn?    ; end
+    def debug?     ; __config__.debug?   ; end
+    def debug=(b)  ; __config__.debug=b  ; end
 
-    def noop?    ; config.noop?    ; end
+    def warn?      ; __config__.warn?    ; end
+    def warn=(b)   ; __config__.warn=b   ; end
 
-    def trial?   ; config.trial?   ; end
+    def noop?      ; __config__.noop?    ; end
+    def noop=(b)   ; __config__.noop=b   ; end
 
-    def dryrun?  ; config.dryrun?  ; end
+    def trial?     ; __config__.trial?   ; end
+    def trial=(b)  ; __config__.trial=b  ; end
+
+    def dryrun?    ; __config__.dryrun?  ; end
+    def dryrun=(b) ; __config__.dryrun=b ; end
 
   end
 
   ##
-  # The Configuration class provides an data store for very common
+  # The Config class provides a data store for various common
   # configuration settings used by other utilities.
   #
-  # * force
-  # * trial/dryrun
-  # * noop
-  # * warn
   # * silent/quiet
+  # * warn
   # * debug
   # * trace
+  # * force
+  # * noop
+  # * trial/dryrun (same as noop && trace)
   #
   # * stdout
   # * stdin
   # * stderr
+  #
+  # * root_pattern
+  # * file_name_policy
   #
   class Config
 
@@ -83,6 +114,11 @@ module ProUtils
 
       @file_name_policy = ['down', 'ext']
 
+      update(options)
+    end
+
+    # Update options.
+    def update(options={})
       options.each do |k,v|
         if repsond_to?("#{k}=")
           send("#{k}=", v)
@@ -174,20 +210,20 @@ module ProUtils
       @noop = !!boolean
     end
 
-    # A *dryrun* is the same a *verbose* and *noop* togehter.
+    # A `dryrun` is the same a `trace` and `noop` togehter.
     def dryrun?
-      verbose? && noop?
+      trace? && noop?
     end
-
-    alias trial? dryrun?
 
     #
-    def dryrun=(boolean_or_integer)
-      self.warn = boolean_or_integer
-      self.noop = boolean
+    def dryrun=(boolean)
+      self.trace = boolean
+      self.noop  = boolean
     end
 
-    alias trial dryrun
+    # Alias for `dryrun`.
+    alias trial? dryrun?
+    alias trial= dryrun=
 
     # If `@debug` is `false` or `nil` then fallsback to the global variable `$DEBUG`.
     def debug?
@@ -245,15 +281,15 @@ module ProUtils
       @stderr = io
     end
 
-    # Project root directory.
+    ## Project root directory.
+    ##
+    ## Returns [Pathname]
+    #attr_reader :root
     #
-    # Returns [Pathname]
-    attr_reader :root
-
-    #
-    def root=(dir)
-      @root = Pathname.new(dir)
-    end
+    ##
+    #def root=(dir)
+    #  @root = Pathname.new(dir)
+    #end
 
     # Glob for finding root of a project.
     #
@@ -265,6 +301,12 @@ module ProUtils
       @root_pattern = glob
     end
 
+    # Deprecated: A file name policy detrmines how files that
+    # have flexiable naming options are to be named exactly.
+    # For instance, a file may optionally be capitialized
+    # or not. A file name policy of `[:cap]` can then be used
+    # to ... this is stupid.
+    #
     # Returns [Array<Symbol>]
     attr_reader :file_name_policy
 
@@ -275,31 +317,16 @@ module ProUtils
       )
     end
 
-    # Current platform.
-    def current_platform
-      require 'facets/platform'
-      Platform.local.to_s
-    end
-
-    # Access RBConfig::CONFIG as an Struct.
-    #
-    # TODO: Currently this returns an OpenStruct, but it should be
-    #       a regular Struct if possible.
-    #
-    def rbconfig
-      @_rbconfig ||= (
-        c = ::RbConfig::CONFIG.rekey{ |k| k.to_s.downcase }
-        OpenStruct.new(c)
-      )
-    end
-
-    # The Ruby command, i.e. the path the the Ruby executable.
-    def ruby_command
-      @_ruby_command ||= (
-		    bindir   = rbconfig.bindir
-		    rubyname = rbconfig.ruby_install_name
-		    File.join(bindir, rubyname).sub(/.*\s.*/m, '"\&"')
-      )
+    # This allows config to be used in some places where a hash would be used.
+    def [](name)
+      return nil unless ATTRIBUTES.include?(name.to_sym)
+      if respond_to?(name)
+        send(name)
+      elsif respond_to?("#{name}?")
+        send("#{name}?")
+      else
+        nil
+      end
     end
 
     #

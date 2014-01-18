@@ -24,14 +24,19 @@ module ProUtils
     #     message      Mesage to send -or-
     #     file         File that contains message.
     #
+    # TODO: Add trace and noop support.
+    #
+    # Returns success status. [Boolean]
     def email(options)
       #options[:file] = localize(options[:file]) if options[:file]
       emailer = Emailer.new(options.rekey)
       success = emailer.email
       if Exception === success
         puts "Email failed: #{success.message}."
+        false
       else
         puts "Email sent successfully to #{success.join(';')}."
+        true
       end
     end
 

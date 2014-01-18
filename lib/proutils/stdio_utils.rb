@@ -9,17 +9,17 @@ module ProUtils
 
     #
     def stdout
-      config.stdout
+      __config__.stdout
     end
 
     #
     def stdin
-      config.stdin
+      __config__.stdin
     end
 
     #
     def stderr
-      config.stderr
+      __config__.stderr
     end
 
     #
@@ -36,7 +36,7 @@ module ProUtils
 
     #
     def warn(message)
-      return if silent?
+      #return if silent?
       stderr.puts "WARNING ".ansi(:yellow) + message.to_s
     end
 
@@ -54,10 +54,10 @@ module ProUtils
 
     # Internal trace report. Only output if in trace mode.
     def trace(message)
-      return if silent?
+      #return if silent?
       if trace?
-        stdout.print "TRIAL RUN " if trial?
-        stdout.puts message
+        stderr.print "(TRIAL RUN) " if trial?
+        stderr.puts message
       end
     end
 

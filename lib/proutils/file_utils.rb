@@ -82,6 +82,7 @@ module ProUtils
     def executable_real?(path) ; FileTest.executable_real?(path) ; end
     def readable_real?(path)   ; FileTest.readable_real?(path)   ; end
 
+    # TODO: better name for this?
     def identical?(path, other)
       FileTest.identical?(path, other)
     end
