@@ -20,141 +20,35 @@ module ProUtils
   #
   module ConfigUtils
 
-		#
-		def configure(options)
-		  @__config__ ||= Config.new
-      @__config__.update(options)
-		end
-
-		# The utility modules themselves use this method instead
-    # of the ordinary #config method to avoid any method name
-    # clash.
-		def __config__
-		  @__config__ ||= Config.new
-		end
-
-    #
-    alias config __config__
-
-    def force?     ; __config__.force?   ; end
-    def force=(b)  ; __config__.force=b  ; end
-
-    def silent?    ; __config__.silent?  ; end
-    def silent=(b) ; __config__.silent=b ; end
-
-    def quiet?     ; __config__.quiet?   ; end
-    def quiet=(b)  ; __config__.quiet=b  ; end
-
-    def trace?     ; __config__.trace?   ; end
-    def trace=(b)  ; __config__.trace=b  ; end
-
-    def debug?     ; __config__.debug?   ; end
-    def debug=(b)  ; __config__.debug=b  ; end
-
-    def warn?      ; __config__.warn?    ; end
-    def warn=(b)   ; __config__.warn=b   ; end
-
-    def noop?      ; __config__.noop?    ; end
-    def noop=(b)   ; __config__.noop=b   ; end
-
-    def trial?     ; __config__.trial?   ; end
-    def trial=(b)  ; __config__.trial=b  ; end
-
-    def dryrun?    ; __config__.dryrun?  ; end
-    def dryrun=(b) ; __config__.dryrun=b ; end
-
-  end
-
-  ##
-  # The Config class provides a data store for various common
-  # configuration settings used by other utilities.
-  #
-  # * silent/quiet
-  # * warn
-  # * debug
-  # * trace
-  # * force
-  # * noop
-  # * trial/dryrun (same as noop && trace)
-  #
-  # * stdout
-  # * stdin
-  # * stderr
-  #
-  # * root_pattern
-  # * file_name_policy
-  #
-  class Config
-
-    # SCM markers for finding a project's root directory.
-    ROOT_PATTERN = "{.index,.git,.hg,.svn,_darcs}"
-
     # List of attributes.
     ATTRIBUTES = [
-      :force, :quiet, :trial, :noop, :verbose, :debug, :trace,
-      :root_pattern, :file_name_policy
+      :silent, :quiet, :trial, :noop, :verbose, :debug, :trace,
+      :root_pattern, :file_name_policy, :stdin, :stdout, :stderr
     ]
 
-    #
-    def initialize(options={})
-      @force   = false
-		  @quiet   = false
-		  @trial   = false
-		  @noop    = false
-      @verbose = false
-
-      @debug   = false
-      @trace   = false
-
-      @stdout  = $stdout
-      @stdin   = $stdin
-      @stderr  = $stderr
-
-      @root_pattern = ROOT_PATTERN
-
-      @file_name_policy = ['down', 'ext']
-
-      update(options)
-    end
-
-    # Update options.
-    def update(options={})
-      options.each do |k,v|
-        if repsond_to?("#{k}=")
-          send("#{k}=", v)
-        else
-          #warn "No utility configuration for #{k}."
+		# FIXME: How to handle exactly?
+		def configure(options, &block)
+      if block
+        save = options.keys.map do |k|
+          [k, send(k)]
+        end
+      else
+        options.each do |name, value|
+          send("#{name}=", value) if ATTRIBUTES.include?(name.to_sym)
         end
       end
-    end
-
-    # Force opertations that otherwise would have been skipped
-    # or raised an error for catuionary reasons.
-    #
-    # NOTE: There is a reluctance to provide a global fallback for
-    #   the force setting, but being consitent with all the other
-    #   settings it does so.
-    #   
-    # Returns [Boolean]
-    def force?
-      @force || $FORCE
-    end
-
-    # Set force setting `true` or `false`.
-    def force=(boolean)
-      @force = !!boolean
-    end
+		end
 
     # When silent the output to $stdout is supressed.
     #
     # Returns [Boolean]
     def silent?
-      @silent || $SILENT
+      $SILENT 
     end
 
-    #
+    # Set `$SILENT` to `true` or `false`.
     def silent=(boolean)
-      @silent = !!boolean
+      $SILENT = !!boolean
     end
 
     # Alias for `#silent?`.
@@ -163,14 +57,38 @@ module ProUtils
     # Alias for `#silent=`.
     alias quiet= silent=
 
-    # Warning level.
-    #
-    # Returns [false,Integer]
-    def warn?
-      @warn || $WARN
+    # Trace flag instructs code to show progress when significant actions
+    # take place. The output should go to `$stderr`. The {StdioUtils#trace}
+    # method is provided to simplify this.
+    def trace?
+      $TRACE
     end
 
-    # Warn set the warning level. It can be `false` (or `nil`) to mean
+    # Set `$TRACE` to `true` or `false`.
+    def trace=(boolean)
+      $TRACE = !!boolean
+    end
+
+    # Debug mode?
+    #
+    # Returns [Boolean]
+    def debug?
+      $DEBUG
+    end
+
+    # Set `$DEBUG` to `true` or `false`.
+    def debug=(boolean)
+      $DEBUG = !!boolean
+    end
+
+    # Warning level.
+    #
+    # Returns [nil,Integer]
+    def warn?
+      $WARN
+    end
+
+    # Set the warning level. It can be `false` (or `nil`) to mean
     # no warnings or any positive integer to indicate a level of warnings
     # The higher the level the more types of warnings one will see.
     #
@@ -179,35 +97,36 @@ module ProUtils
     # values of the $VERBOSE global variable.
     #
     def warn=(level)
-      @warn = (
+      $WARN = (
         case level
         when Integer
-          @warn = level.to_i.abs
-        when True
-          @warn = 0
+          level = level.abs
+          level == 0 ? nil : level
+        when true
+          2
         else
-          @warn = false
+          nil
         end
       )
 
-      # Ruby's handling of warning levels
+      # Ruby's handling of warning levels.
       $VERBOSE = (
-        case @warn
+        case $WARN
         when nil, false then nil
-        when 0 then false
+        when 1 then false
         else true
         end
       )
     end
 
-    # If `@noop` is nil then fallsback to the global variable `$NOOP`.
+    #
     def noop?
-      @noop || $NOOP
+      $NOOP
     end
 
     #
     def noop=(boolean)
-      @noop = !!boolean
+      $NOOP = !!boolean
     end
 
     # A `dryrun` is the same a `trace` and `noop` togehter.
@@ -225,81 +144,71 @@ module ProUtils
     alias trial? dryrun?
     alias trial= dryrun=
 
-    # If `@debug` is `false` or `nil` then fallsback to the global variable `$DEBUG`.
-    def debug?
-      @debug || $DEBUG
-    end
-
-    #
-    def debug=(boolean)
-      @debug = !!boolean
-    end
-
-    # If `@trace` is `false` or `nil` then fallsback to the global variable `$TRACE`.
-    def trace?
-      @trace || $TRACE
-    end
-
-    #
-    def trace=(boolean)
-      @trace = !!boolean
-    end
-
-    # If `@stdin` is nil then fallsback to the global variable `$stdin`.
+    # Access to `$stdin`.
     # 
     # Returns [IO]
     def stdin
-      @stdin || $stdin
+      $stdin
     end
 
     #
     def stdin=(io)
-      @stdin = io
+      $stdin = io
     end
 
-    # If `@stdout` is nil then fallsback to the global variable `$stdout`.
+    # Access to `$stdout`.
     # 
     # Returns [IO]
     def stdout
-      @stdout || $stdout
+      $stdout
     end
 
     #
     def stdout=(io)
-      @stdout = io
+      $stdout = io
     end
 
-    # If `@stderr` is nil then fallsback to the global variable `$stderr`.
+    # Access to `$stderr`.
     # 
     # Returns [IO]
     def stderr
-      @stderr || $stdrr
+      $stdrr
     end
 
     #
     def stderr=(io)
-      @stderr = io
+      $stderr = io
     end
 
-    ## Project root directory.
-    ##
-    ## Returns [Pathname]
-    #attr_reader :root
-    #
-    ##
-    #def root=(dir)
-    #  @root = Pathname.new(dir)
-    #end
+    # Default project root pattern.
+    $ROOT_PATTERN = "{.index,.git,.hg,.svn,_darcs}"
 
     # Glob for finding root of a project.
     #
+    # TODO: Get the from an environment variable first?
+    #
     # Returns glob string. [String]
-    attr :root_pattern
+    def root_pattern
+      $ROOT_PATTERN
+    end
 
+    # The project root pattern glob.
+    #
+    # glob - [String] Pattern used by `Dir.glob()` to locate a
+    #        project's root directory.
     #
     def root_pattern=(glob)
-      @root_pattern = glob
+      $ROOT_PATTERN = glob
     end
+
+    # Probably can do without the filename policy. But if some tool
+    # saves to a file, and the default naming scheme is to the users
+    # liking then they should have the option of chaning the name
+    # of file explicitly. Being able to adjust the "style" of name
+    # os useful then.
+
+    # Deprecated: Default file name policy.
+    $FILENAME_POLICY = [:down, :ext]
 
     # Deprecated: A file name policy detrmines how files that
     # have flexiable naming options are to be named exactly.
@@ -308,15 +217,39 @@ module ProUtils
     # to ... this is stupid.
     #
     # Returns [Array<Symbol>]
-    attr_reader :file_name_policy
+    def filename_policy
+      $FILENAME_POLICY
+    end
 
-    #
-    def file_name_policy=(entry)
-      @config[:file_name_policy] ||= (
+    # Deprecated: Set file name policy.
+    def filename_policy=(entry)
+      $FILENAME_POLICY ||= (
         Array(entry).map{ |s| s.to_s }
       )
     end
 
+    # Force opertations that otherwise would have been skipped
+    # or raised an error for catuionary reasons.
+    #
+    # NOTE: There is a reluctance to provide a global for the
+    #   force setting. Maybe force should be on a per use basis
+    #   and not a global config at all?
+    #   
+    # Returns [Boolean]
+    def force?
+      $FORCE
+    end
+
+    # Set force setting `true` or `false`.
+    def force=(boolean)
+      $FORCE = !!boolean
+    end
+
+  end
+
+end
+
+=begin
     # This allows config to be used in some places where a hash would be used.
     def [](name)
       return nil unless ATTRIBUTES.include?(name.to_sym)
@@ -337,7 +270,5 @@ module ProUtils
       end
       h
     end
+=end
 
-  end
-
-end

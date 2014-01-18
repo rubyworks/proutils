@@ -12,7 +12,7 @@ module ProUtils
 
     # Shell delegator.
     def shell
-      @_shell ||= Shell.new(__config__)
+      @_shell ||= Shell.new
     end
 
     # Shell out to ruby.
@@ -56,8 +56,7 @@ module ProUtils
     include StdioUtils
 
     #
-    def initialize(config=nil)
-      @__config__ = config || Config.new
+    def initialize
     end
 
     # Shell out.
@@ -66,7 +65,7 @@ module ProUtils
     def out(*argv)
       cmd = argv.map{ |a| a.to_s }.join(' ')
 
-      trace cmd
+      trace(cmd)
       return true if noop?
 
       success = nil
@@ -82,7 +81,7 @@ module ProUtils
     #
     # Returns success of executation. [Boolean]
     def ruby(*argv)
-      out(config.ruby_command, *argv)
+      out(InfoUtils.ruby_command, *argv)
     end
 
     #

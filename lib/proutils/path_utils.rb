@@ -7,9 +7,9 @@ module ProUtils
 
     include ConfigUtils
 
-    #
+    # Shortcut for create a `Path` instance.
     def path(pathname)
-      Path.new(pathname, __config__)
+      Path.new(pathname)
     end
 
     # Alias for #path.
@@ -22,7 +22,7 @@ module ProUtils
     # Returns [Pathname]
     def root
       config.root ||= (
-        find_root || Path.new(Dir.pwd, __config__)
+        find_root || Path.new(Dir.pwd)
       )
     end
 
@@ -34,7 +34,7 @@ module ProUtils
       home = File.expand_path('~')
 
       while dir != home && dir != '/'
-        if Dir[__config__.root_pattern].first
+        if Dir[root_pattern].first
           path = dir
           break
         end
@@ -48,7 +48,7 @@ module ProUtils
     #
     # Returns the file name. [String]
     def apply_file_name_policy(name, ext)
-      __config__.file_name_policy.each do |policy|
+      filename_policy.each do |policy|
         case policy.to_s
         when /^low/, /^down/
           name = name.downcase
@@ -76,31 +76,8 @@ module ProUtils
   # TODO: Add options to #open and #sysopen based on writable permission.
   #
   class Path < ::Pathname
-
     #include ConfigUtils
     #include StdioUtils
-
-    #
-    def initialize(path, options={})
-      @trace = options[:trace] || options[:dryrun]
-      @noop  = options[:noop]  || options[:dryrun]
-
-      super(path)
-    end
-
-    def trace?
-      @trace || $TRACE
-    end
-
-    def noop?
-      @noop || $NOOP
-    end
-
-    def trial?
-      trace? && noop?
-    end
-
-    alias dryrun? trial? 
 
     # Pathname methods that can modify the file system.
     DRYRUN_METHODS = [
@@ -112,29 +89,34 @@ module ProUtils
     DRYRUN_METHODS.each do |methname|
       module_eval %{
         def #{methname}(*args)
-          if trace?
-            $stderr.print "(TRIAL RUN) " if trial?
+          if $TRACE
+            $stderr.print "(TRIAL RUN) " if $NOOP
             $stderr.puts "path #{methname} \#{self} \#{args.join(' ')}"
           end
-          super(*args) unless noop?
+          super(*args) unless $NOOP
         end
       }
     end
 
     # Write to file.
     def write(*args)
-      $stderr.puts "write #{path}" if trace?
-      super(*args) unless noop?
+      $stderr.print "(TRIAL RUN) " if $NOOP
+      $stderr.puts "write #{path}" if $TRACE
+      super(*args) unless $NOOP
     end
 
     # Append to file.
     def append(text)
+      $stderr.print "(TRIAL RUN) " if $NOOP
       $stderr.puts "path append #{path}" if trace?
       File.open(path, 'a'){ |f| f << text } unless noop?
     end
 
+    # Does path have the same content as another path?
     #
-    def identical?(other)
+    # TODO: Better name?
+    def same?(other)
+      # TODO: Raname FileTest.indentical?
       FileTest.identical?(path, other)
     end
 

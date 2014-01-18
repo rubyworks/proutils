@@ -8,18 +8,19 @@ module ProUtils
     include ConfigUtils
 
     #
-    def stdout
-      __config__.stdout
+    def stdin
+      $stdin
     end
 
     #
-    def stdin
-      __config__.stdin
+    def stdout
+      # return dev/null if silent?
+      $stdout
     end
 
     #
     def stderr
-      __config__.stderr
+      $stderr
     end
 
     #

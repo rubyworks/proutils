@@ -83,7 +83,7 @@ module ProUtils
     def readable_real?(path)   ; FileTest.readable_real?(path)   ; end
 
     # TODO: better name for this?
-    def identical?(path, other)
+    def same?(path, other)
       FileTest.identical?(path, other)
     end
 
