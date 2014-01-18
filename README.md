@@ -17,21 +17,28 @@ development.
 
 ## Usage
 
-ProUtils provides it;s utility methods in a handful of independent
-modules.
+ProUtils provides its utility methods in a handful of independent modules.
 
-* `ConfigUtils` - Used by all modules to hande configuration of utility methods.
+* `ConfigUtils` - Used by all modules to handle configuration of utility methods.
 * `EmailUtils`  - Provides utility methods to make it easy to send emails.
-* `PathUtils`   - Convenience methods for working with Pathname instances.
+* `InfoUtils`   - Provides utility methods for accessing system information.
+* `PathUtils`   - Convenience methods for working with file system paths.
 * `ShellUtils`  - Utility methods for shelling out to the command line.
-* `StdioUtils`  - Utility methods for read and writing to standard IO.
+* `StdioUtils`  - Methods for read and writing to standard IO.
 * `FileUtils`   - An expanded version of Ruby's FileUtils module.
 
-There will likey be a few more modules added in the future and some may
-be reformulate a bit as this is yet at an early stage of developement.
+There will likely be a few more modules added in the future and some could
+be reformulated a bit, as this project is still in an fairly early stage
+of development.
 
-In additon a dozen or so core extensions are cherry picked from Facets to
-faciliate the utility methods.
+Also included are a few supporting classes that can be used independently
+as well.
+
+* `Path`  - An improved subclass of `Pathname` that takes configuration into account.
+* `Shell` - A delegator for shelling out to the command line via method calls.
+
+Lastly, there are two dozen or so core extensions cherry picked from Ruby Facets
+to facilitate the utility methods.
 
 
 ## Tips
