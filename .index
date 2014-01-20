@@ -2,7 +2,7 @@
 revision: 2013
 type: ruby
 sources:
-- Metadata
+- Indexfile
 - Gemfile
 authors:
 - name: Trans
@@ -65,4 +65,4 @@ description: ProUtils provides a large set of utitlity methods useful for projec
   development requirements. The methods are divided up into a set of topic modules
   to help maximize reusability.
 created: '2014-01-14'
-date: '2014-01-19'
+date: '2014-01-20'
